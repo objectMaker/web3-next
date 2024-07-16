@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react"
-import {ethers,AbstractProvider,JsonRpcSigner} from "ethers"
+import {ethers,AbstractProvider,JsonRpcSigner,formatEther} from "ethers"
 
 export default function Test() {
 	const [eth,setEth] = useState<{
@@ -31,15 +31,17 @@ export default function Test() {
 		confirm("you connected successfully")
 	}
 
-	const [account,setAccount] = useState('')
+	const [accountAddress,setAccountAddress] = useState('')
 
 	async function handleGetAccount() {
 		if(!eth.provider){
-			return confirm("you have not connected!")
+			 confirm("you have not connected!")
+			 throw new Error("you have not connected!")
 		}
 		//get account api
 		const address = await eth.signer?.getAddress?.()
-		setAccount(address || '')
+		setAccountAddress(address || '')
+		return address || '';
 	}
 
 	const [blockNumber,setBlockNumber] = useState('')
@@ -52,9 +54,20 @@ export default function Test() {
 		const number = await eth.provider?.getBlockNumber?.()
 		setBlockNumber(number + '')
 	}
+	const [balance,setBalance] = useState('')
+	async function handleGetBalance() {
+		if(!eth.provider){
+			return confirm("you have not connected!")
+		}
+		//get account api
+		const accountAddress = await handleGetAccount()
+		const number = await eth.provider?.getBalance(accountAddress)
+		const numberEth = formatEther(number)
+		setBalance(numberEth + 'eth')
+	}
 	
 	return <>
-		<div>account : {account}</div>
+		<div>account : {accountAddress}</div>
 		<button onClick={connect} className="hover:scale-110 mr-3 border-2 p-1 transition-all ease-linear hover:bg-light-800 rounded-sm border-green-800">connect</button>
 		<button onClick={handleGetAccount} className="hover:scale-110 mr-3 border-2 p-1 transition-all ease-linear hover:bg-light-800 rounded-sm border-green-800">		setAccount
 		</button>
@@ -63,6 +76,10 @@ export default function Test() {
 		</div>
 		<button onClick={handleGetBlockNumber} className="hover:scale-110 mr-3 border-2 p-1 transition-all ease-linear hover:bg-light-800 rounded-sm border-green-800">		setBlockNumber
 		</button>
-		
+		<div>
+		balance : {balance}
+		</div>
+		<button onClick={handleGetBalance} className="hover:scale-110 mr-3 border-2 p-1 transition-all ease-linear hover:bg-light-800 rounded-sm border-green-800">		setBalance
+		</button>
 	</>
 }
