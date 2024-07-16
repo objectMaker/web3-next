@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react"
-import {ethers,AbstractProvider,JsonRpcSigner,formatEther} from "ethers"
+import {ethers,AbstractProvider,JsonRpcSigner,formatEther,parseEther} from "ethers"
 
 export default function Test() {
 	const [eth,setEth] = useState<{
@@ -65,6 +65,33 @@ export default function Test() {
 		const numberEth = formatEther(number)
 		setBalance(numberEth + 'eth')
 	}
+
+	const [nonce,setNonce] = useState('')
+	async function handleGetNonce() {
+		if(!eth.provider){
+			return confirm("you have not connected!")
+		}
+		//get account api
+		const accountAddress = await handleGetAccount()
+		const count = await eth.provider.getTransactionCount(accountAddress)
+		setNonce(count+"")
+	}
+	
+
+	async function handleSendTransaction() {
+		if(!eth.provider){
+			return confirm("you have not connected!")
+		}
+		//get account api
+		const tx = await eth.signer?.sendTransaction({
+			to:"0xaa76702c82f66fe8F24f07fDAAf4662191Cf2F4C",
+			value:parseEther('0.01')
+		})
+		const receipt = await tx?.wait()
+		console.log(receipt,'receipt')
+		confirm( `send transaction successfully use ${formatEther(receipt?.fee || 0)}eth,send 0.01eth`)
+		await handleGetBalance();
+	}
 	
 	return <>
 		<div>account : {accountAddress}</div>
@@ -80,6 +107,14 @@ export default function Test() {
 		balance : {balance}
 		</div>
 		<button onClick={handleGetBalance} className="hover:scale-110 mr-3 border-2 p-1 transition-all ease-linear hover:bg-light-800 rounded-sm border-green-800">		setBalance
+		</button>
+		<div>
+		Nonce : {nonce}
+		</div>
+		<button onClick={handleGetNonce} className="hover:scale-110 mr-3 border-2 p-1 transition-all ease-linear hover:bg-light-800 rounded-sm border-green-800">		setNonce
+		</button>
+		<div>--------</div>
+		<button onClick={handleSendTransaction} className="hover:scale-110 mr-3 border-2 p-1 transition-all ease-linear hover:bg-light-800 rounded-sm border-green-800">SendTransaction
 		</button>
 	</>
 }
